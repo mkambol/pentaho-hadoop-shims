@@ -21,6 +21,7 @@
  ******************************************************************************/
 package org.pentaho.hadoop.shim.common.format.orc;
 
+import java.net.URI;
 import java.nio.file.FileAlreadyExistsException;
 
 import org.apache.hadoop.conf.Configuration;
@@ -33,8 +34,8 @@ import org.pentaho.hadoop.shim.api.format.IPentahoOrcOutputFormat;
 
 import org.apache.hadoop.mapreduce.Job;
 import org.pentaho.hadoop.shim.common.ConfigurationProxy;
+import org.pentaho.hadoop.shim.common.delegating.FileSystemResolver;
 import org.pentaho.hadoop.shim.common.format.HadoopFormatBase;
-import org.pentaho.hadoop.shim.common.format.S3NCredentialUtils;
 
 import java.util.List;
 
@@ -82,10 +83,14 @@ public class PentahoOrcOutputFormat extends HadoopFormatBase implements IPentaho
   }
 
   @Override public void setOutputFile( String file, boolean override ) throws Exception {
-    this.outputFilename = S3NCredentialUtils.scrubFilePathIfNecessary( file );
-    S3NCredentialUtils.applyS3CredentialsToHadoopConfigurationIfNecessary( file, job.getConfiguration() );
-    Path outputFile = new Path( outputFilename );
-    FileSystem fs = FileSystem.get( outputFile.toUri(), job.getConfiguration() );
+    //    this.outputFilename = S3NCredentialUtils.scrubFilePathIfNecessary( file );
+    //    S3NCredentialUtils.applyS3CredentialsToHadoopConfigurationIfNecessary( file, job.getConfiguration() );
+    //    Path outputFile = new Path( outputFilename );
+    //    FileSystem fs = FileSystem.get( outputFile.toUri(), job.getConfiguration() );
+    FileSystem fs = FileSystemResolver.get( new URI( file ), conf );
+    Path outputFile = FileSystemResolver.realPath( file );
+    this.outputFilename = outputFile.toString();
+
     if ( fs.exists( outputFile ) ) {
       if ( override ) {
         fs.delete( outputFile, true );

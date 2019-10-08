@@ -21,6 +21,7 @@
  ******************************************************************************/
 package org.pentaho.hadoop.shim.common.format.parquet.delegate.apache;
 
+import java.net.URI;
 import java.nio.file.NoSuchFileException;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,9 +48,9 @@ import org.pentaho.hadoop.shim.api.cluster.NamedCluster;
 import org.pentaho.hadoop.shim.api.format.IParquetInputField;
 import org.pentaho.hadoop.shim.api.format.IPentahoParquetInputFormat;
 import org.pentaho.hadoop.shim.common.ConfigurationProxy;
+import org.pentaho.hadoop.shim.common.delegating.FileSystemResolver;
 import org.pentaho.hadoop.shim.common.format.HadoopFormatBase;
 import org.pentaho.hadoop.shim.common.format.ReadFileFilter;
-import org.pentaho.hadoop.shim.common.format.S3NCredentialUtils;
 import org.pentaho.hadoop.shim.common.format.parquet.ParquetInputFieldList;
 import org.pentaho.hadoop.shim.common.format.parquet.PentahoInputSplitImpl;
 
@@ -68,7 +69,9 @@ public class PentahoApacheInputFormat extends HadoopFormatBase implements IPenta
 
     inClassloader( () -> {
       ConfigurationProxy conf = new ConfigurationProxy();
-      ShimConfigsLoader.addConfigsAsResources( namedCluster.getName(), conf::addResource );
+      if ( namedCluster != null ) {
+        ShimConfigsLoader.addConfigsAsResources( namedCluster.getName(), conf::addResource );
+      }
       job = Job.getInstance( conf );
 
       nativeParquetInputFormat = new ParquetInputFormat<>();
@@ -89,9 +92,13 @@ public class PentahoApacheInputFormat extends HadoopFormatBase implements IPenta
   @Override
   public void setInputFile( String file ) throws Exception {
     inClassloader( () -> {
-      S3NCredentialUtils.applyS3CredentialsToHadoopConfigurationIfNecessary( file, job.getConfiguration() );
-      Path filePath = new Path( S3NCredentialUtils.scrubFilePathIfNecessary( file ) );
-      FileSystem fs = FileSystem.get( filePath.toUri(), job.getConfiguration() );
+//      S3NCredentialUtils.applyS3CredentialsToHadoopConfigurationIfNecessary( file, job.getConfiguration() );
+//      Path filePath = new Path( S3NCredentialUtils.scrubFilePathIfNecessary( file ) );
+
+      FileSystem fs = FileSystemResolver.get( new URI( file ), job.getConfiguration() );
+      Path filePath = FileSystemResolver.realPath( file );
+
+
       if ( !fs.exists( filePath ) ) {
         throw new NoSuchFileException( file );
       }
@@ -154,11 +161,13 @@ public class PentahoApacheInputFormat extends HadoopFormatBase implements IPenta
   public List<IParquetInputField> readSchema( String file ) throws Exception {
     return inClassloader( () -> {
       ConfigurationProxy conf = new ConfigurationProxy();
-      S3NCredentialUtils.applyS3CredentialsToHadoopConfigurationIfNecessary( file, conf );
-      Path filePath = new Path( S3NCredentialUtils.scrubFilePathIfNecessary( file ) );
-      FileSystem fs = FileSystem.get( filePath.toUri(), conf );
+//      S3NCredentialUtils.applyS3CredentialsToHadoopConfigurationIfNecessary( file, conf );
+//      Path filePath = new Path( S3NCredentialUtils.scrubFilePathIfNecessary( file ) );
+      FileSystem fs = FileSystemResolver.get( new URI( file ), conf );
+      Path filePath = FileSystemResolver.realPath( file );
       FileStatus fileStatus = fs.getFileStatus( filePath );
-      List<Footer> footers = ParquetFileReader.readFooters( conf, fileStatus, true );
+      List<Footer> footers = ParquetFileReader.readFooters( fs.getConf(), fileStatus, true );
+
       if ( footers.isEmpty() ) {
         return new ArrayList<IParquetInputField>();
       } else {
