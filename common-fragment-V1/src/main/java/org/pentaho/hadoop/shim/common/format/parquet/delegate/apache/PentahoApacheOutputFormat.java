@@ -22,6 +22,7 @@
 package org.pentaho.hadoop.shim.common.format.parquet.delegate.apache;
 
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.FileAlreadyExistsException;
 import java.util.List;
 
@@ -41,8 +42,8 @@ import org.pentaho.di.core.RowMetaAndData;
 import org.pentaho.hadoop.shim.api.format.IParquetOutputField;
 import org.pentaho.hadoop.shim.api.format.IPentahoParquetOutputFormat;
 import org.pentaho.hadoop.shim.common.ConfigurationProxy;
+import org.pentaho.hadoop.shim.common.delegating.FileSystemResolver;
 import org.pentaho.hadoop.shim.common.format.HadoopFormatBase;
-import org.pentaho.hadoop.shim.common.format.S3NCredentialUtils;
 
 /**
  * Created by Vasilina_Terehova on 8/3/2017.
@@ -79,9 +80,11 @@ public class PentahoApacheOutputFormat extends HadoopFormatBase implements IPent
   @Override
   public void setOutputFile( String file, boolean override ) throws Exception {
     inClassloader( () -> {
-      S3NCredentialUtils.applyS3CredentialsToHadoopConfigurationIfNecessary( file, job.getConfiguration() );
-      outputFile = new Path( S3NCredentialUtils.scrubFilePathIfNecessary( file ) );
-      FileSystem fs = FileSystem.get( outputFile.toUri(), job.getConfiguration() );
+      //      S3NCredentialUtils.applyS3CredentialsToHadoopConfigurationIfNecessary( file, job.getConfiguration() );
+      //      outputFile = new Path( S3NCredentialUtils.scrubFilePathIfNecessary( file ) );
+
+      FileSystem fs = FileSystemResolver.get( new URI( file ), job.getConfiguration() );
+      outputFile = FileSystemResolver.realPath( file );
       if ( fs.exists( outputFile ) ) {
         if ( override ) {
           fs.delete( outputFile, true );

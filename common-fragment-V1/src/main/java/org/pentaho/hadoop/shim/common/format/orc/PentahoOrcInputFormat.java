@@ -35,10 +35,12 @@ import org.pentaho.hadoop.shim.api.format.IOrcInputField;
 import org.pentaho.hadoop.shim.api.format.IOrcMetaData;
 import org.pentaho.hadoop.shim.api.format.IPentahoOrcInputFormat;
 import org.pentaho.hadoop.shim.common.ConfigurationProxy;
+import org.pentaho.hadoop.shim.common.delegating.FileSystemResolver;
 import org.pentaho.hadoop.shim.common.format.HadoopFormatBase;
 import org.pentaho.hadoop.shim.common.format.S3NCredentialUtils;
 
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.NoSuchFileException;
 import java.util.List;
 
@@ -52,12 +54,16 @@ public class PentahoOrcInputFormat extends HadoopFormatBase implements IPentahoO
   private Configuration conf;
 
   public PentahoOrcInputFormat( NamedCluster namedCluster ) throws Exception {
-    conf = inClassloader( () -> {
-      Configuration conf = new ConfigurationProxy();
-      conf.addResource( "hive-site.xml" );
-      ShimConfigsLoader.addConfigsAsResources( namedCluster.getName(), conf::addResource );
-      return conf;
-    } );
+    if ( namedCluster == null ) {
+      conf = new Configuration();
+    } else {
+      conf = inClassloader( () -> {
+        Configuration conf = new ConfigurationProxy();
+        conf.addResource( "hive-site.xml" );
+        ShimConfigsLoader.addConfigsAsResources( namedCluster.getName(), conf::addResource );
+        return conf;
+      } );
+    }
   }
 
   @Override
@@ -108,9 +114,14 @@ public class PentahoOrcInputFormat extends HadoopFormatBase implements IPentahoO
       FileSystem fs;
       Reader orcReader;
       try {
-        S3NCredentialUtils.applyS3CredentialsToHadoopConfigurationIfNecessary( fileName, conf );
-        filePath = new Path( fileName );
-        fs = FileSystem.get( filePath.toUri(), conf );
+        //S3NCredentialUtils.applyS3CredentialsToHadoopConfigurationIfNecessary( fileName, conf );
+        //        filePath = new Path( fileName );
+        //        fs = FileSystem.get( filePath.toUri(), conf );
+
+        fs = FileSystemResolver.get( new URI( fileName ), conf );
+        filePath = FileSystemResolver.realPath( fileName );
+
+
         if ( !fs.exists( filePath ) ) {
           throw new NoSuchFileException( fileName );
         }
