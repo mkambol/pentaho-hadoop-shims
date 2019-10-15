@@ -10,7 +10,7 @@ public class DelegateFormatFactory {
 
   public static Object getInputFormatInstance( NamedCluster namedCluster ) throws Exception {
 
-    String shimIdentifier = namedCluster.getShimIdentifier();
+    String shimIdentifier = getShimIdentifier( namedCluster );
     if ( ( shimIdentifier.startsWith( "cdh" ) && !shimIdentifier.startsWith( "cdh6" ) ) || (
       shimIdentifier.startsWith( "mapr" ) && !shimIdentifier.equals( "mapr60" ) ) ) {
       return new PentahoTwitterInputFormat( namedCluster );
@@ -21,7 +21,7 @@ public class DelegateFormatFactory {
 
   public static Object getOutputFormatInstance( NamedCluster namedCluster ) throws Exception {
 
-    String shimIdentifier = namedCluster.getShimIdentifier();
+    String shimIdentifier = getShimIdentifier( namedCluster );
     if ( ( shimIdentifier.startsWith( "cdh" ) && !shimIdentifier.startsWith( "cdh6" ) ) || (
       shimIdentifier.startsWith( "mapr" ) && !shimIdentifier.equals( "mapr60" ) ) ) {
       return new PentahoTwitterOutputFormat();
@@ -29,4 +29,13 @@ public class DelegateFormatFactory {
       return new PentahoApacheOutputFormat();
     }
   }
+
+  private static String getShimIdentifier( NamedCluster namedCluster ) {
+    if ( namedCluster == null ) {
+      return "UNKNOWN";
+    }
+    return namedCluster.getShimIdentifier();
+  }
+
+
 }

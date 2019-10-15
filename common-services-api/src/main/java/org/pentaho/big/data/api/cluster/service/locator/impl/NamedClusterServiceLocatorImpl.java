@@ -128,7 +128,7 @@ public class NamedClusterServiceLocatorImpl implements NamedClusterServiceLocato
     try {
       readLock.lock();
       //The named Cluster is not fully defined.  We'll have to use the default shim
-      String shim = namedCluster.getShimIdentifier() != null ? namedCluster.getShimIdentifier() : getDefaultShim();
+      String shim = namedCluster != null && namedCluster.getShimIdentifier() != null ? namedCluster.getShimIdentifier() : getDefaultShim();
 
       Collection<ServiceFactoryAndRanking<?>> serviceFactoryAndRankings = null;
       if ( shim != null ) {

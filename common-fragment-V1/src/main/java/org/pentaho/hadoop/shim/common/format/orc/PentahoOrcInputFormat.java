@@ -52,12 +52,17 @@ public class PentahoOrcInputFormat extends HadoopFormatBase implements IPentahoO
   private Configuration conf;
 
   public PentahoOrcInputFormat( NamedCluster namedCluster ) throws Exception {
-    conf = inClassloader( () -> {
-      Configuration conf = new ConfigurationProxy();
-      conf.addResource( "hive-site.xml" );
-      ShimConfigsLoader.addConfigsAsResources( namedCluster.getName(), conf::addResource );
-      return conf;
-    } );
+    Thread.currentThread().setContextClassLoader( getClass().getClassLoader() );
+    if ( namedCluster == null ) {
+      conf = new ConfigurationProxy();
+    } else {
+      conf = inClassloader( () -> {
+        Configuration conf = new ConfigurationProxy();
+        conf.addResource( "hive-site.xml" );
+        ShimConfigsLoader.addConfigsAsResources( namedCluster.getName(), conf::addResource );
+        return conf;
+      } );
+    }
   }
 
   @Override
@@ -70,7 +75,7 @@ public class PentahoOrcInputFormat extends HadoopFormatBase implements IPentahoO
     if ( fileName == null || inputFields == null ) {
       throw new IllegalStateException( "fileName or inputFields must not be null" );
     }
-    conf = new Configuration();
+    // conf = new Configuration();  // not sure why this is being created here.
     return inClassloader( () -> {
       return new PentahoOrcRecordReader( fileName, conf, inputFields );
     } );
