@@ -14,7 +14,7 @@ filesystems requires that we either:
 This POC implements (2).  See the document attached to https://jira.pentaho.com/browse/PDI-18133
 for considerations around (1).
 
-##Implementation
+## Implementation
 
 In order to minimize impact to existing steps and Format implementations,
 this implementation registers a Hadoop Filesystem implementation
@@ -41,7 +41,7 @@ retrieved when no named cluster is present.
 ![PDI](PDI.png)
 
 
-##TODO
+## TODO
 1)  The 'apache' shim currently gets selected only if configured to be the "default shim".
 This should be exposed as an independent configuration option.
 2)  Pentaho VFS URIs and S3a URIs have an inconsistency.
@@ -57,3 +57,4 @@ rather than the apache library directly.  It needs to do this because the aws-ja
 has modified package names for these classes.  If we switch to using the
 component libraries, rather than the aws-java-sdk-bundle, we'd need to also
 update the SelfSignedS3ClientFactory.
+6) Avro format appears to have issues with BigDecimal conversion, unrelated to this POC, but needs follow up.
