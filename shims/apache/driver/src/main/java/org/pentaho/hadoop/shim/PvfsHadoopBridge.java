@@ -159,6 +159,9 @@ public class PvfsHadoopBridge extends FileSystem {
     conf.set( "fs.s3a.access.key", accessKey );
     conf.set( "fs.s3a.secret.key", secretKey );
     if ( !isNullOrEmpty( sessionToken ) ) {
+      // use of session token requires the TemporaryAWSCredentialProvider
+      conf.set( "fs.s3a.aws.credentials.provider",
+        "org.apache.hadoop.fs.s3a.TemporaryAWSCredentialsProvider" );
       conf.set( "fs.s3a.session.token", sessionToken );
     }
     conf.set( "fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem" );
