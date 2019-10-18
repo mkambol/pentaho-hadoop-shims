@@ -15,7 +15,7 @@
         <shim-bundle-plugin.version>1.0</shim-bundle-plugin.version>
         <pentaho-code.version>11.0.0.0</pentaho-code.version>
         <aws-java-sdk-core.version>1.11.275</aws-java-sdk-core.version>
-        <integration-test.src>src/it/java</integration-test.src>
+<!--        <integration-test.src>src/it/java</integration-test.src>-->
         <gateway-shell.version>1.0.0.3.0.0.0-1634</gateway-shell.version>
     </properties>
 
@@ -601,24 +601,24 @@
     </dependencies>
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>build-helper-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>add-integration-test-sources</id>
-                        <phase>generate-test-sources</phase>
-                        <goals>
-                            <goal>add-test-source</goal>
-                        </goals>
-                        <configuration>
-                            <sources>
-                                <source>${integration-test.src}</source>
-                            </sources>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
+<!--            <plugin>-->
+<!--                <groupId>org.codehaus.mojo</groupId>-->
+<!--                <artifactId>build-helper-maven-plugin</artifactId>-->
+<!--                <executions>-->
+<!--                    <execution>-->
+<!--                        <id>add-integration-test-sources</id>-->
+<!--                        <phase>generate-test-sources</phase>-->
+<!--                        <goals>-->
+<!--                            <goal>add-test-source</goal>-->
+<!--                        </goals>-->
+<!--                        <configuration>-->
+<!--                            <sources>-->
+<!--                                <source>${integration-test.src}</source>-->
+<!--                            </sources>-->
+<!--                        </configuration>-->
+<!--                    </execution>-->
+<!--                </executions>-->
+<!--            </plugin>-->
             <plugin>
                 <groupId>com.pentaho</groupId>
                 <artifactId>shim-bundle-plugin</artifactId>
